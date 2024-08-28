@@ -13,46 +13,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  fullName  String
+  name      String?
+  document  String?
   orders    Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   name        String
   description String?
   price       Float
   imageUrl    String?
   stock       Int
-  orders      OrderItem[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  categories  Category[]
+  orderItems  OrderItem[] // Añadir esta línea para la relación con OrderItem
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model Order {
   id        Int         @id @default(autoincrement())
   user      User        @relation(fields: [userId], references: [id])
   userId    Int
-  total     Float
   items     OrderItem[]
-  status    String
+  total     Float
+  status    OrderStatus @default(PENDING)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }
 
 model OrderItem {
-  id        Int      @id @default(autoincrement())
-  order     Order    @relation(fields: [orderId], references: [id])
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id])
   orderId   Int
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int
   price     Float
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+enum OrderStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }
